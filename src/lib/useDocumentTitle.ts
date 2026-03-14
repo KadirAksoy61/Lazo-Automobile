@@ -5,9 +5,5 @@ const BASE_TITLE = 'Lazo Automobile'
 export function useDocumentTitle(title?: string) {
   useEffect(() => {
     document.title = title ? `${title} | ${BASE_TITLE}` : BASE_TITLE
-
-    return () => {
-      document.title = BASE_TITLE
-    }
   }, [title])
 }
