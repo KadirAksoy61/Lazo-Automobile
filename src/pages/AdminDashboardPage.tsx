@@ -1,7 +1,9 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { SiteLayout } from '../components/SiteLayout'
 import { useAuth } from '../context/AuthContext'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 import {
   createVehicle,
   deleteCustomerLead,
@@ -40,6 +42,7 @@ const lifecycleStatusLabel: Record<CustomerLifecycleStatus, string> = {
 }
 
 export function AdminDashboardPage() {
+  useDocumentTitle('Admin-Dashboard')
   const { signOut } = useAuth()
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [inquiries, setInquiries] = useState<Inquiry[]>([])

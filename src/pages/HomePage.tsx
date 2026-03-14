@@ -1,6 +1,9 @@
+import { Link } from 'react-router-dom'
 import { SiteLayout } from '../components/SiteLayout'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 
 export function HomePage() {
+  useDocumentTitle()
   return (
     <SiteLayout>
       <main className="home-main">
@@ -12,12 +15,12 @@ export function HomePage() {
               Exklusive Performance-Fahrzeuge, kuratiert für Fahrerinnen und Fahrer mit Anspruch.
             </p>
             <div className="hero-actions">
-              <a className="primary-button" href="/bestand">
+              <Link className="primary-button" to="/bestand">
                 Bestand ansehen
-              </a>
-              <a className="ghost-button" href="/kontakt">
+              </Link>
+              <Link className="ghost-button" to="/kontakt">
                 Kontakt aufnehmen
-              </a>
+              </Link>
             </div>
           </div>
         </section>

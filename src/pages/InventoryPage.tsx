@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { SiteLayout } from '../components/SiteLayout'
 import { VehicleCard } from '../components/VehicleCard'
 import { useAuth } from '../context/AuthContext'
+import { currency, number } from '../lib/formatters'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 import {
   addVehicleToWishlist,
   listVehicleBrands,
@@ -11,18 +13,11 @@ import {
   removeVehicleFromWishlist,
 } from '../lib/vehicleRepository'
 import type { Vehicle } from '../types/vehicle'
-
-const currency = new Intl.NumberFormat('de-DE', {
-  style: 'currency',
-  currency: 'EUR',
-  maximumFractionDigits: 0,
-})
-
-const number = new Intl.NumberFormat('de-DE')
 const MAX_COMPARE = 3
 const COMPARE_STORAGE_KEY = 'compareVehicleIds'
 
 export function InventoryPage() {
+  useDocumentTitle('Bestand')
   const { user } = useAuth()
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [brands, setBrands] = useState<string[]>(['Alle'])
@@ -81,13 +76,10 @@ export function InventoryPage() {
     setCompareIds((current) => current.filter((id) => vehicles.some((vehicle) => vehicle.id === id)))
   }, [vehicles])
 
-  const hasVehicles = useMemo(() => vehicles.length > 0, [vehicles])
-  const compareVehicles = useMemo(
-    () => compareIds
+  const hasVehicles = vehicles.length > 0
+  const compareVehicles = compareIds
       .map((id) => vehicles.find((vehicle) => vehicle.id === id))
-      .filter((vehicle): vehicle is Vehicle => Boolean(vehicle)),
-    [compareIds, vehicles],
-  )
+      .filter((vehicle): vehicle is Vehicle => Boolean(vehicle))
 
   const compareRows = [
     { label: 'Preis', value: (vehicle: Vehicle) => currency.format(vehicle.priceEur) },
@@ -177,6 +169,8 @@ export function InventoryPage() {
                   return (
                     <button
                       key={brand}
+                      role="tab"
+                      aria-selected={isActive}
                       className={filterClassName}
                       onClick={() => setActiveBrand(brand)}
                     >

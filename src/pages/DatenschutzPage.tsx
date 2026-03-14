@@ -1,6 +1,8 @@
 import { SiteLayout } from '../components/SiteLayout'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 
 export function DatenschutzPage() {
+  useDocumentTitle('Datenschutz')
   return (
     <SiteLayout>
       <main className="content-wrap legal-page">

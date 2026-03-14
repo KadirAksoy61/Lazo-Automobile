@@ -1,9 +1,12 @@
-import { FormEvent, useState } from 'react'
+import { useState } from 'react'
+import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { SiteLayout } from '../components/SiteLayout'
 import { useAuth } from '../context/AuthContext'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 
 export function CustomerRegisterPage() {
+  useDocumentTitle('Registrieren')
   const navigate = useNavigate()
   const { signUp, resendSignupConfirmation } = useAuth()
   const [errorMessage, setErrorMessage] = useState('')

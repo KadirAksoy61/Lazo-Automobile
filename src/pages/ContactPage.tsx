@@ -1,8 +1,11 @@
-import { FormEvent, useState } from 'react'
+import { useState } from 'react'
+import type { FormEvent } from 'react'
 import { SiteLayout } from '../components/SiteLayout'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 import { submitInquiry } from '../lib/vehicleRepository'
 
 export function ContactPage() {
+  useDocumentTitle('Kontakt')
   const [contactSubmitting, setContactSubmitting] = useState(false)
   const [contactMessage, setContactMessage] = useState('')
 

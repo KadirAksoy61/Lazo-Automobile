@@ -1,6 +1,8 @@
 import { SiteLayout } from '../components/SiteLayout'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 
 export function AboutPage() {
+  useDocumentTitle('Über uns')
   return (
     <SiteLayout>
       <main>
