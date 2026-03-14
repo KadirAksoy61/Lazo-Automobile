@@ -26,6 +26,19 @@ import type {
   VehicleUpdateDraft,
 } from '../types/vehicle'
 
+const inquiryStatusLabel: Record<InquiryStatus, string> = {
+  new: 'Neu',
+  contacted: 'Kontaktiert',
+  closed: 'Abgeschlossen',
+}
+
+const lifecycleStatusLabel: Record<CustomerLifecycleStatus, string> = {
+  new: 'Neu',
+  qualified: 'Qualifiziert',
+  customer: 'Kunde',
+  inactive: 'Inaktiv',
+}
+
 export function AdminDashboardPage() {
   const { signOut } = useAuth()
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
@@ -102,6 +115,7 @@ export function AdminDashboardPage() {
       firstRegistration: vehicle.firstRegistration,
       description: vehicle.description,
       status: vehicle.status,
+      imageUrls: vehicle.imageUrls,
     })
   }
 
@@ -122,7 +136,17 @@ export function AdminDashboardPage() {
     setIsVehicleSaving(true)
 
     try {
-      const updated = await updateVehicle(editingVehicleId, vehicleDraft)
+      const formData = new FormData(event.currentTarget)
+      const rawFiles = formData.getAll('additionalImages')
+      const newFiles = rawFiles.filter((f): f is File => f instanceof File && f.size > 0)
+
+      let imageUrls = vehicleDraft.imageUrls
+      if (newFiles.length > 0) {
+        const newUrls = await Promise.all(newFiles.map((f) => uploadVehicleImage(f)))
+        imageUrls = [...imageUrls, ...newUrls]
+      }
+
+      const updated = await updateVehicle(editingVehicleId, { ...vehicleDraft, imageUrls })
       setVehicles((current) =>
         current.map((vehicle) => (vehicle.id === updated.id ? updated : vehicle)),
       )
@@ -138,7 +162,7 @@ export function AdminDashboardPage() {
   }
 
   async function handleVehicleDelete(vehicleId: string) {
-    const confirmed = globalThis.confirm('Fahrzeug wirklich loeschen?')
+    const confirmed = globalThis.confirm('Fahrzeug wirklich löschen?')
     if (!confirmed) {
       return
     }
@@ -149,12 +173,12 @@ export function AdminDashboardPage() {
     try {
       await deleteVehicle(vehicleId)
       setVehicles((current) => current.filter((vehicle) => vehicle.id !== vehicleId))
-      setSuccessMessage('Fahrzeug wurde geloescht.')
+      setSuccessMessage('Fahrzeug wurde gelöscht.')
       if (editingVehicleId === vehicleId) {
         cancelVehicleEdit()
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Fahrzeug konnte nicht geloescht werden.'
+      const message = error instanceof Error ? error.message : 'Fahrzeug konnte nicht gelöscht werden.'
       setErrorMessage(message)
     }
   }
@@ -202,17 +226,18 @@ export function AdminDashboardPage() {
     event.preventDefault()
 
     const formData = new FormData(event.currentTarget)
-    const imageFile = formData.get('primaryImageFile')
+    const rawFiles = formData.getAll('imageFiles')
 
     setIsSubmitting(true)
     setErrorMessage('')
 
     try {
-      if (!(imageFile instanceof File) || imageFile.size === 0) {
-        throw new Error('Bitte laden Sie ein Bild hoch.')
+      const validFiles = rawFiles.filter((f): f is File => f instanceof File && f.size > 0)
+      if (validFiles.length === 0) {
+        throw new Error('Bitte laden Sie mindestens ein Bild hoch.')
       }
 
-      const primaryImageUrl = await uploadVehicleImage(imageFile)
+      const imageUrls = await Promise.all(validFiles.map((f) => uploadVehicleImage(f)))
 
       const vehicle = await createVehicle({
         brand: String(formData.get('brand') ?? ''),
@@ -228,7 +253,7 @@ export function AdminDashboardPage() {
         color: String(formData.get('color') ?? ''),
         firstRegistration: String(formData.get('firstRegistration') ?? ''),
         description: String(formData.get('description') ?? ''),
-        primaryImageUrl,
+        imageUrls,
       })
 
       setVehicles((current) => [vehicle, ...current])
@@ -259,9 +284,9 @@ export function AdminDashboardPage() {
         const others = current.filter((customer) => customer.email !== saved.email)
         return [saved, ...others]
       })
-      setSuccessMessage('Lead wurde in Kundenverwaltung uebernommen.')
+      setSuccessMessage('Lead wurde in Kundenverwaltung übernommen.')
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Lead konnte nicht uebernommen werden.'
+      const message = error instanceof Error ? error.message : 'Lead konnte nicht übernommen werden.'
       setErrorMessage(message)
     } finally {
       setIsCustomerSaving(false)
@@ -308,7 +333,7 @@ export function AdminDashboardPage() {
   }
 
   async function handleCustomerDelete(email: string) {
-    const confirmed = globalThis.confirm('Kundeneintrag wirklich loeschen?')
+    const confirmed = globalThis.confirm('Kundeneintrag wirklich löschen?')
     if (!confirmed) {
       return
     }
@@ -329,9 +354,9 @@ export function AdminDashboardPage() {
           notes: '',
         })
       }
-      setSuccessMessage('Kunde wurde geloescht.')
+      setSuccessMessage('Kunde wurde gelöscht.')
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Kunde konnte nicht geloescht werden.'
+      const message = error instanceof Error ? error.message : 'Kunde konnte nicht gelöscht werden.'
       setErrorMessage(message)
     } finally {
       setIsCustomerDeleting(null)
@@ -342,9 +367,9 @@ export function AdminDashboardPage() {
     <SiteLayout>
       <main className="content-wrap admin-page">
         <div className="admin-header">
-          <h1>Admin Dashboard</h1>
+          <h1>Admin-Dashboard</h1>
           <button className="dark-button" onClick={() => void signOut()} type="button">
-            Logout
+            Abmelden
           </button>
         </div>
         {successMessage && <p className="status-inline">{successMessage}</p>}
@@ -362,7 +387,7 @@ export function AdminDashboardPage() {
               <input name="model" required />
             </label>
             <label>
-              Preis (EUR)
+              Preis (€)
               <input min={0} name="priceEur" required type="number" />
             </label>
             <label>
@@ -402,8 +427,8 @@ export function AdminDashboardPage() {
               <input name="firstRegistration" required type="date" />
             </label>
             <label className="full-width">
-              Primarbild (Datei)
-              <input name="primaryImageFile" type="file" accept="image/*" required />
+              Bilder (Dateien, mehrere möglich)
+              <input name="imageFiles" type="file" accept="image/*" multiple required />
             </label>
             <label className="full-width">
               Beschreibung
@@ -446,7 +471,7 @@ export function AdminDashboardPage() {
                 />
               </label>
               <label>
-                Preis (EUR)
+                Preis (€)
                 <input
                   type="number"
                   min={0}
@@ -587,6 +612,35 @@ export function AdminDashboardPage() {
                   required
                 />
               </label>
+              <div className="full-width">
+                <p className="admin-label">Vorhandene Bilder</p>
+                {vehicleDraft.imageUrls.length === 0 && (
+                  <p className="status-inline">Keine Bilder hinterlegt.</p>
+                )}
+                <div className="admin-image-list">
+                  {vehicleDraft.imageUrls.map((url) => (
+                    <div key={url} className="admin-image-thumb">
+                      <img src={url} alt="Fahrzeugbild" />
+                      <button
+                        type="button"
+                        className="admin-image-remove"
+                        title="Bild entfernen"
+                        onClick={() =>
+                          setVehicleDraft((c) =>
+                            c ? { ...c, imageUrls: c.imageUrls.filter((u) => u !== url) } : c,
+                          )
+                        }
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <label className="full-width">
+                Weitere Bilder hinzufügen
+                <input name="additionalImages" type="file" accept="image/*" multiple />
+              </label>
               <label>
                 Status
                 <select
@@ -602,14 +656,14 @@ export function AdminDashboardPage() {
                     )
                   }
                 >
-                  <option value="available">available</option>
-                  <option value="reserved">reserved</option>
-                  <option value="sold">sold</option>
+                  <option value="available">Verfügbar</option>
+                  <option value="reserved">Reserviert</option>
+                  <option value="sold">Verkauft</option>
                 </select>
               </label>
               <div className="full-width action-row">
                 <button className="dark-button" type="submit" disabled={isVehicleSaving}>
-                  {isVehicleSaving ? 'Speichere...' : 'Aenderungen speichern'}
+                  {isVehicleSaving ? 'Speichere...' : 'Änderungen speichern'}
                 </button>
                 <button className="chip-button" type="button" onClick={cancelVehicleEdit}>
                   Abbrechen
@@ -654,16 +708,16 @@ export function AdminDashboardPage() {
                             )
                           }
                         >
-                          <option value="available">available</option>
-                          <option value="reserved">reserved</option>
-                          <option value="sold">sold</option>
+                          <option value="available">Verfügbar</option>
+                          <option value="reserved">Reserviert</option>
+                          <option value="sold">Verkauft</option>
                         </select>
                       </td>
                       <td>
-                        <Link className="inline-link" to={`/fahrzeuge/${vehicle.slug}`}>
-                          Ansehen
-                        </Link>
-                        <div className="table-actions">
+                        <div className="table-actions table-actions-inline">
+                          <Link className="chip-button" to={`/fahrzeuge/${vehicle.slug}`}>
+                            Ansehen
+                          </Link>
                           <button
                             type="button"
                             className="chip-button"
@@ -676,7 +730,7 @@ export function AdminDashboardPage() {
                             className="chip-button danger"
                             onClick={() => void handleVehicleDelete(vehicle.id)}
                           >
-                            Loeschen
+                            Löschen
                           </button>
                         </div>
                       </td>
@@ -723,16 +777,16 @@ export function AdminDashboardPage() {
                             )
                           }
                         >
-                          <option value="available">available</option>
-                          <option value="reserved">reserved</option>
-                          <option value="sold">sold</option>
+                          <option value="available">Verfügbar</option>
+                          <option value="reserved">Reserviert</option>
+                          <option value="sold">Verkauft</option>
                         </select>
                       </td>
                       <td>
-                        <Link className="inline-link" to={`/fahrzeuge/${vehicle.slug}`}>
-                          Ansehen
-                        </Link>
-                        <div className="table-actions">
+                        <div className="table-actions table-actions-inline">
+                          <Link className="chip-button" to={`/fahrzeuge/${vehicle.slug}`}>
+                            Ansehen
+                          </Link>
                           <button
                             type="button"
                             className="chip-button"
@@ -745,7 +799,7 @@ export function AdminDashboardPage() {
                             className="chip-button danger"
                             onClick={() => void handleVehicleDelete(vehicle.id)}
                           >
-                            Loeschen
+                            Löschen
                           </button>
                         </div>
                       </td>
@@ -803,9 +857,9 @@ export function AdminDashboardPage() {
                             )
                           }
                         >
-                          <option value="new">new</option>
-                          <option value="contacted">contacted</option>
-                          <option value="closed">closed</option>
+                          <option value="new">Neu</option>
+                          <option value="contacted">Kontaktiert</option>
+                          <option value="closed">Abgeschlossen</option>
                         </select>
                       </td>
                     </tr>
@@ -817,7 +871,7 @@ export function AdminDashboardPage() {
         </section>
 
         <section className="admin-block">
-          <h2>Leads-Uebersicht</h2>
+          <h2>Leads-Übersicht</h2>
           {isLeadsLoading ? (
             <p className="status-inline">Leads werden geladen...</p>
           ) : leads.length === 0 ? (
@@ -844,7 +898,7 @@ export function AdminDashboardPage() {
                       <td>{lead.phone ?? '-'}</td>
                       <td>{lead.inquiryCount}</td>
                       <td>{new Date(lead.lastInquiryAt).toLocaleString('de-DE')}</td>
-                      <td>{lead.latestStatus}</td>
+                      <td>{inquiryStatusLabel[lead.latestStatus]}</td>
                       <td>
                         <button
                           type="button"
@@ -852,7 +906,7 @@ export function AdminDashboardPage() {
                           disabled={isCustomerSaving}
                           onClick={() => void handlePromoteLead(lead)}
                         >
-                          Als Kunde uebernehmen
+                          In Kunden übernehmen
                         </button>
                       </td>
                     </tr>
@@ -867,7 +921,7 @@ export function AdminDashboardPage() {
           <h2>Kundenverwaltung</h2>
           <form className="admin-form grid-two" onSubmit={handleCustomerSubmit}>
             <label>
-              Email
+              E-Mail
               <input
                 type="email"
                 value={customerForm.email}
@@ -896,7 +950,7 @@ export function AdminDashboardPage() {
               />
             </label>
             <label>
-              Lifecycle Status
+              Lebenszyklus-Status
               <select
                 value={customerForm.lifecycleStatus}
                 onChange={(event) =>
@@ -906,10 +960,10 @@ export function AdminDashboardPage() {
                   }))
                 }
               >
-                <option value="new">new</option>
-                <option value="qualified">qualified</option>
-                <option value="customer">customer</option>
-                <option value="inactive">inactive</option>
+                <option value="new">Neu</option>
+                <option value="qualified">Qualifiziert</option>
+                <option value="customer">Kunde</option>
+                <option value="inactive">Inaktiv</option>
               </select>
             </label>
             <label className="full-width">
@@ -939,7 +993,7 @@ export function AdminDashboardPage() {
                   })
                 }
               >
-                Reset
+                Zurücksetzen
               </button>
             </div>
           </form>
@@ -957,7 +1011,7 @@ export function AdminDashboardPage() {
                     <th>Name</th>
                     <th>Telefon</th>
                     <th>Status</th>
-                    <th>Updated</th>
+                    <th>Aktualisiert</th>
                     <th>Aktion</th>
                   </tr>
                 </thead>
@@ -967,10 +1021,10 @@ export function AdminDashboardPage() {
                       <td>{customer.email}</td>
                       <td>{customer.name ?? '-'}</td>
                       <td>{customer.phone ?? '-'}</td>
-                      <td>{customer.lifecycleStatus}</td>
+                      <td>{lifecycleStatusLabel[customer.lifecycleStatus]}</td>
                       <td>{new Date(customer.updatedAt).toLocaleString('de-DE')}</td>
                       <td>
-                        <div className="table-actions">
+                        <div className="table-actions table-actions-inline">
                           <button
                             type="button"
                             className="chip-button"
@@ -984,7 +1038,7 @@ export function AdminDashboardPage() {
                             disabled={isCustomerDeleting === customer.email}
                             onClick={() => void handleCustomerDelete(customer.email)}
                           >
-                            {isCustomerDeleting === customer.email ? 'Loesche...' : 'Loeschen'}
+                            {isCustomerDeleting === customer.email ? 'Lösche...' : 'Löschen'}
                           </button>
                         </div>
                       </td>

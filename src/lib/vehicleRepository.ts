@@ -230,7 +230,7 @@ export async function createVehicle(input: VehicleDraft): Promise<Vehicle> {
       color: input.color,
       first_registration: input.firstRegistration,
       description: input.description,
-      image_urls: [input.primaryImageUrl],
+      image_urls: input.imageUrls,
       status: 'available',
     })
     .select('*')
@@ -256,7 +256,7 @@ export async function createVehicle(input: VehicleDraft): Promise<Vehicle> {
           color: input.color,
           first_registration: input.firstRegistration,
           description: input.description,
-          image_urls: [input.primaryImageUrl],
+          image_urls: input.imageUrls,
           status: 'available',
         })
         .select('*')
@@ -351,6 +351,7 @@ export async function updateVehicle(
       first_registration: input.firstRegistration,
       description: input.description,
       status: input.status,
+      image_urls: input.imageUrls,
       updated_at: new Date().toISOString(),
     })
     .eq('id', vehicleId)

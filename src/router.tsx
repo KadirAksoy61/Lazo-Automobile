@@ -3,20 +3,35 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import {
   AdminDashboardPage,
   AdminLoginPage,
+  AboutPage,
   CustomerLoginPage,
   CustomerRegisterPage,
   DatenschutzPage,
   HomePage,
   ImpressumPage,
+  InventoryPage,
   NotFoundPage,
   VehicleDetailPage,
   WishlistPage,
+  ContactPage,
 } from './pages'
 
 export const router = createBrowserRouter([
   {
     path: '/',
     element: <HomePage />,
+  },
+  {
+    path: '/bestand',
+    element: <InventoryPage />,
+  },
+  {
+    path: '/ueber-uns',
+    element: <AboutPage />,
+  },
+  {
+    path: '/kontakt',
+    element: <ContactPage />,
   },
   {
     path: '/fahrzeuge/:slug',

@@ -6,14 +6,14 @@ export function SiteHeader() {
 
   return (
     <header className="site-header">
-      <div className="content-wrap nav-wrap">
+      <div className="nav-wrap">
         <Link className="brand-mark" to="/">
           Lazo Automobile
         </Link>
         <nav className="nav-links" aria-label="Hauptnavigation">
-          <a href="/#bestand">Bestand</a>
-          <a href="/#about">Uber uns</a>
-          <a href="/#kontakt">Kontakt</a>
+          <Link to="/bestand">Bestand</Link>
+          <Link to="/ueber-uns">Über uns</Link>
+          <Link to="/kontakt">Kontakt</Link>
           {session ? (
             <>
               <Link to="/konto/wunschliste">Wunschliste</Link>

@@ -40,7 +40,7 @@ export interface VehicleDraft {
   color: string
   firstRegistration: string
   description: string
-  primaryImageUrl: string
+  imageUrls: string[]
 }
 
 export interface VehicleUpdateDraft {
@@ -58,6 +58,7 @@ export interface VehicleUpdateDraft {
   firstRegistration: string
   description: string
   status: VehicleStatus
+  imageUrls: string[]
 }
 
 export interface InquiryInput {
