@@ -172,7 +172,7 @@ export async function listVehicleBrands(): Promise<string[]> {
   }
 
   const uniqueBrands = [
-    ...new Set((data ?? []).map((row) => String((row as { brand: string }).brand))),
+    ...new Set((data ?? []).map((row) => String(row.brand))),
   ]
 
   return ['Alle', ...uniqueBrands]

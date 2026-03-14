@@ -1284,10 +1284,7 @@ select:focus-visible {
   }
 
   .grid-two,
-  .detail-specs dl {
-    grid-template-columns: 1fr;
-  }
-
+  .detail-specs dl,
   .detail-grid {
     grid-template-columns: 1fr;
   }
