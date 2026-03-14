@@ -41,7 +41,7 @@ export function AdminLoginPage() {
           verwalten.
         </p>
 
-        <form className="admin-form" onSubmit={handleSubmit}>
+        <form className="admin-form mx-auto w-full max-w-xl" onSubmit={handleSubmit}>
           <label htmlFor="admin-email">Email</label>
           <input id="admin-email" name="email" type="email" required />
 

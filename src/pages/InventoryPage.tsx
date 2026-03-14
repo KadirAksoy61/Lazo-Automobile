@@ -4,6 +4,7 @@ import { SiteLayout } from '../components/SiteLayout'
 import { VehicleCard } from '../components/VehicleCard'
 import { useAuth } from '../context/AuthContext'
 import { currency, number } from '../lib/formatters'
+import { useDebounce } from '../lib/useDebounce'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
 import {
   addVehicleToWishlist,
@@ -23,6 +24,7 @@ export function InventoryPage() {
   const [brands, setBrands] = useState<string[]>(['Alle'])
   const [activeBrand, setActiveBrand] = useState('Alle')
   const [query, setQuery] = useState('')
+  const debouncedQuery = useDebounce(query, 300)
   const [isLoading, setIsLoading] = useState(true)
   const [wishlistIds, setWishlistIds] = useState<string[]>([])
   const [contactMessage, setContactMessage] = useState('')
@@ -48,14 +50,14 @@ export function InventoryPage() {
 
   useEffect(() => {
     setIsLoading(true)
-    void listVehicles({ brand: activeBrand, query })
+    void listVehicles({ brand: activeBrand, query: debouncedQuery })
       .then((nextVehicles) => {
         setVehicles(nextVehicles)
       })
       .finally(() => {
         setIsLoading(false)
       })
-  }, [activeBrand, query])
+  }, [activeBrand, debouncedQuery])
 
   useEffect(() => {
     if (!user) {
@@ -152,7 +154,7 @@ export function InventoryPage() {
 
             <div className="inventory-toolbar">
               <label className="search-field" htmlFor="search-model">
-                <span aria-hidden="true">Search</span>
+                <span aria-hidden="true">Suche</span>
                 <input
                   id="search-model"
                   type="text"

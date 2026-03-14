@@ -76,15 +76,17 @@ export function WishlistPage() {
         ) : hasVehicles ? (
           <div className="inventory-grid">
             {vehicles.map((vehicle) => (
-              <div key={vehicle.id}>
+              <div key={vehicle.id} className="wishlist-card-wrap">
                 <VehicleCard vehicle={vehicle} />
-                <button
-                  type="button"
-                  className="dark-button"
-                  onClick={() => void handleRemove(vehicle.id)}
-                >
-                  Entfernen
-                </button>
+                <div className="wishlist-card-actions">
+                  <button
+                    type="button"
+                    className="chip-button danger"
+                    onClick={() => void handleRemove(vehicle.id)}
+                  >
+                    Entfernen
+                  </button>
+                </div>
               </div>
             ))}
           </div>

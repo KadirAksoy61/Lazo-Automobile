@@ -1153,6 +1153,21 @@ h1 {
   color: #ffb4bb;
 }
 
+.wishlist-card-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.wishlist-card-wrap .vehicle-card {
+  flex: 1;
+}
+
+.wishlist-card-actions {
+  padding: 10px 0 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
 .legal-page {
   min-height: 75vh;
   padding: 36px 0 62px;
@@ -1270,6 +1285,10 @@ select:focus-visible {
 
   .grid-two,
   .detail-specs dl {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-grid {
     grid-template-columns: 1fr;
   }
 

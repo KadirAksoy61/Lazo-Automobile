@@ -1,20 +1,24 @@
+import { lazy, Suspense } from 'react'
 import { createBrowserRouter } from 'react-router-dom'
 import { ProtectedRoute } from './components/ProtectedRoute'
-import {
-  AdminDashboardPage,
-  AdminLoginPage,
-  AboutPage,
-  CustomerLoginPage,
-  CustomerRegisterPage,
-  DatenschutzPage,
-  HomePage,
-  ImpressumPage,
-  InventoryPage,
-  NotFoundPage,
-  VehicleDetailPage,
-  WishlistPage,
-  ContactPage,
-} from './pages'
+import { HomePage } from './pages/HomePage'
+
+const InventoryPage = lazy(() => import('./pages/InventoryPage').then((m) => ({ default: m.InventoryPage })))
+const AboutPage = lazy(() => import('./pages/AboutPage').then((m) => ({ default: m.AboutPage })))
+const ContactPage = lazy(() => import('./pages/ContactPage').then((m) => ({ default: m.ContactPage })))
+const VehicleDetailPage = lazy(() => import('./pages/VehicleDetailPage').then((m) => ({ default: m.VehicleDetailPage })))
+const AdminLoginPage = lazy(() => import('./pages/AdminLoginPage').then((m) => ({ default: m.AdminLoginPage })))
+const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage').then((m) => ({ default: m.AdminDashboardPage })))
+const CustomerLoginPage = lazy(() => import('./pages/CustomerLoginPage').then((m) => ({ default: m.CustomerLoginPage })))
+const CustomerRegisterPage = lazy(() => import('./pages/CustomerRegisterPage').then((m) => ({ default: m.CustomerRegisterPage })))
+const WishlistPage = lazy(() => import('./pages/WishlistPage').then((m) => ({ default: m.WishlistPage })))
+const ImpressumPage = lazy(() => import('./pages/ImpressumPage').then((m) => ({ default: m.ImpressumPage })))
+const DatenschutzPage = lazy(() => import('./pages/DatenschutzPage').then((m) => ({ default: m.DatenschutzPage })))
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })))
+
+function LazyPage({ children }: { children: React.ReactNode }) {
+  return <Suspense fallback={null}>{children}</Suspense>
+}
 
 export const router = createBrowserRouter([
   {
@@ -23,58 +27,58 @@ export const router = createBrowserRouter([
   },
   {
     path: '/bestand',
-    element: <InventoryPage />,
+    element: <LazyPage><InventoryPage /></LazyPage>,
   },
   {
     path: '/ueber-uns',
-    element: <AboutPage />,
+    element: <LazyPage><AboutPage /></LazyPage>,
   },
   {
     path: '/kontakt',
-    element: <ContactPage />,
+    element: <LazyPage><ContactPage /></LazyPage>,
   },
   {
     path: '/fahrzeuge/:slug',
-    element: <VehicleDetailPage />,
+    element: <LazyPage><VehicleDetailPage /></LazyPage>,
   },
   {
     path: '/admin/login',
-    element: <AdminLoginPage />,
+    element: <LazyPage><AdminLoginPage /></LazyPage>,
   },
   {
     path: '/admin',
     element: (
       <ProtectedRoute requireAdmin>
-        <AdminDashboardPage />
+        <LazyPage><AdminDashboardPage /></LazyPage>
       </ProtectedRoute>
     ),
   },
   {
     path: '/konto/login',
-    element: <CustomerLoginPage />,
+    element: <LazyPage><CustomerLoginPage /></LazyPage>,
   },
   {
     path: '/konto/registrieren',
-    element: <CustomerRegisterPage />,
+    element: <LazyPage><CustomerRegisterPage /></LazyPage>,
   },
   {
     path: '/konto/wunschliste',
     element: (
       <ProtectedRoute redirectTo="/konto/login">
-        <WishlistPage />
+        <LazyPage><WishlistPage /></LazyPage>
       </ProtectedRoute>
     ),
   },
   {
     path: '/impressum',
-    element: <ImpressumPage />,
+    element: <LazyPage><ImpressumPage /></LazyPage>,
   },
   {
     path: '/datenschutz',
-    element: <DatenschutzPage />,
+    element: <LazyPage><DatenschutzPage /></LazyPage>,
   },
   {
     path: '*',
-    element: <NotFoundPage />,
+    element: <LazyPage><NotFoundPage /></LazyPage>,
   },
 ])
