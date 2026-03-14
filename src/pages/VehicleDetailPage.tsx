@@ -1,7 +1,10 @@
-import { FormEvent, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
+import type { FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { SiteLayout } from '../components/SiteLayout'
 import { useAuth } from '../context/AuthContext'
+import { currency, number } from '../lib/formatters'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 import {
   addVehicleToWishlist,
   getVehicleBySlug,
@@ -10,14 +13,6 @@ import {
   submitInquiry,
 } from '../lib/vehicleRepository'
 import type { Vehicle } from '../types/vehicle'
-
-const currency = new Intl.NumberFormat('de-DE', {
-  style: 'currency',
-  currency: 'EUR',
-  maximumFractionDigits: 0,
-})
-
-const number = new Intl.NumberFormat('de-DE')
 
 export function VehicleDetailPage() {
   const { user } = useAuth()
@@ -28,6 +23,8 @@ export function VehicleDetailPage() {
   const [isWishlisted, setIsWishlisted] = useState(false)
   const [submitMessage, setSubmitMessage] = useState('')
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
+
+  useDocumentTitle(vehicle ? `${vehicle.brand} ${vehicle.model}` : 'Fahrzeugdetail')
 
   useEffect(() => {
     if (lightboxIndex === null) return
@@ -175,7 +172,16 @@ export function VehicleDetailPage() {
                   src={imageUrl}
                   alt={`${vehicle.brand} ${vehicle.model} – Bild ${index + 1}`}
                   className="detail-gallery-img"
+                  loading={index === 0 ? 'eager' : 'lazy'}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => setLightboxIndex(index)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      setLightboxIndex(index)
+                    }
+                  }}
                 />
               ))}
             </div>

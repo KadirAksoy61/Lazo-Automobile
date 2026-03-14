@@ -1,13 +1,6 @@
 import { Link } from 'react-router-dom'
+import { currency, number } from '../lib/formatters'
 import type { Vehicle } from '../types/vehicle'
-
-const currency = new Intl.NumberFormat('de-DE', {
-  style: 'currency',
-  currency: 'EUR',
-  maximumFractionDigits: 0,
-})
-
-const number = new Intl.NumberFormat('de-DE')
 
 export function VehicleCard({
   vehicle,
@@ -33,7 +26,7 @@ export function VehicleCard({
   return (
     <article className="vehicle-card">
       <Link to={`/fahrzeuge/${vehicle.slug}`}>
-        <img src={image} alt={`${vehicle.brand} ${vehicle.model}`} />
+        <img src={image} alt={`${vehicle.brand} ${vehicle.model}`} loading="lazy" />
       </Link>
       <div className="vehicle-body">
         <div className="vehicle-topline">

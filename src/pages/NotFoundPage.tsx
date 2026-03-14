@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom'
 import { SiteLayout } from '../components/SiteLayout'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 
 export function NotFoundPage() {
+  useDocumentTitle('Seite nicht gefunden')
   return (
     <SiteLayout>
       <main className="content-wrap status-page">

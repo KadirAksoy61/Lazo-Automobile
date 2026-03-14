@@ -1,9 +1,12 @@
-import { FormEvent, useState } from 'react'
+import { useState } from 'react'
+import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SiteLayout } from '../components/SiteLayout'
 import { useAuth } from '../context/AuthContext'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 
 export function AdminLoginPage() {
+  useDocumentTitle('Admin Login')
   const navigate = useNavigate()
   const { signIn } = useAuth()
   const [errorMessage, setErrorMessage] = useState('')
@@ -38,7 +41,7 @@ export function AdminLoginPage() {
           verwalten.
         </p>
 
-        <form className="admin-form" onSubmit={handleSubmit}>
+        <form className="admin-form mx-auto w-full max-w-xl" onSubmit={handleSubmit}>
           <label htmlFor="admin-email">Email</label>
           <input id="admin-email" name="email" type="email" required />
 

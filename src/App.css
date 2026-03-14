@@ -1153,6 +1153,21 @@ h1 {
   color: #ffb4bb;
 }
 
+.wishlist-card-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.wishlist-card-wrap .vehicle-card {
+  flex: 1;
+}
+
+.wishlist-card-actions {
+  padding: 10px 0 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
 .legal-page {
   min-height: 75vh;
   padding: 36px 0 62px;
@@ -1216,6 +1231,45 @@ h1 {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+.chip-button:focus-visible,
+.dark-button:focus-visible,
+.ghost-button:focus-visible,
+.primary-button:focus-visible,
+.filter-chip:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 2px;
+}
+
+a:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 0;
+}
+
 @media (max-width: 1024px) {
   .inventory-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1230,7 +1284,8 @@ h1 {
   }
 
   .grid-two,
-  .detail-specs dl {
+  .detail-specs dl,
+  .detail-grid {
     grid-template-columns: 1fr;
   }
 

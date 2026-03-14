@@ -1,8 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { SiteLayout } from '../components/SiteLayout'
 import { VehicleCard } from '../components/VehicleCard'
 import { useAuth } from '../context/AuthContext'
+import { currency, number } from '../lib/formatters'
+import { useDebounce } from '../lib/useDebounce'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 import {
   addVehicleToWishlist,
   listVehicleBrands,
@@ -11,23 +14,17 @@ import {
   removeVehicleFromWishlist,
 } from '../lib/vehicleRepository'
 import type { Vehicle } from '../types/vehicle'
-
-const currency = new Intl.NumberFormat('de-DE', {
-  style: 'currency',
-  currency: 'EUR',
-  maximumFractionDigits: 0,
-})
-
-const number = new Intl.NumberFormat('de-DE')
 const MAX_COMPARE = 3
 const COMPARE_STORAGE_KEY = 'compareVehicleIds'
 
 export function InventoryPage() {
+  useDocumentTitle('Bestand')
   const { user } = useAuth()
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [brands, setBrands] = useState<string[]>(['Alle'])
   const [activeBrand, setActiveBrand] = useState('Alle')
   const [query, setQuery] = useState('')
+  const debouncedQuery = useDebounce(query, 300)
   const [isLoading, setIsLoading] = useState(true)
   const [wishlistIds, setWishlistIds] = useState<string[]>([])
   const [contactMessage, setContactMessage] = useState('')
@@ -53,14 +50,14 @@ export function InventoryPage() {
 
   useEffect(() => {
     setIsLoading(true)
-    void listVehicles({ brand: activeBrand, query })
+    void listVehicles({ brand: activeBrand, query: debouncedQuery })
       .then((nextVehicles) => {
         setVehicles(nextVehicles)
       })
       .finally(() => {
         setIsLoading(false)
       })
-  }, [activeBrand, query])
+  }, [activeBrand, debouncedQuery])
 
   useEffect(() => {
     if (!user) {
@@ -81,13 +78,10 @@ export function InventoryPage() {
     setCompareIds((current) => current.filter((id) => vehicles.some((vehicle) => vehicle.id === id)))
   }, [vehicles])
 
-  const hasVehicles = useMemo(() => vehicles.length > 0, [vehicles])
-  const compareVehicles = useMemo(
-    () => compareIds
+  const hasVehicles = vehicles.length > 0
+  const compareVehicles = compareIds
       .map((id) => vehicles.find((vehicle) => vehicle.id === id))
-      .filter((vehicle): vehicle is Vehicle => Boolean(vehicle)),
-    [compareIds, vehicles],
-  )
+      .filter((vehicle): vehicle is Vehicle => Boolean(vehicle))
 
   const compareRows = [
     { label: 'Preis', value: (vehicle: Vehicle) => currency.format(vehicle.priceEur) },
@@ -160,7 +154,7 @@ export function InventoryPage() {
 
             <div className="inventory-toolbar">
               <label className="search-field" htmlFor="search-model">
-                <span aria-hidden="true">Search</span>
+                <span aria-hidden="true">Suche</span>
                 <input
                   id="search-model"
                   type="text"
@@ -177,6 +171,8 @@ export function InventoryPage() {
                   return (
                     <button
                       key={brand}
+                      role="tab"
+                      aria-selected={isActive}
                       className={filterClassName}
                       onClick={() => setActiveBrand(brand)}
                     >

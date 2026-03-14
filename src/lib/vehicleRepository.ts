@@ -162,8 +162,20 @@ export async function listVehicles(filters?: VehicleFilters): Promise<Vehicle[]>
 }
 
 export async function listVehicleBrands(): Promise<string[]> {
-  const vehicles = await listVehicles()
-  return ['Alle', ...new Set(vehicles.map((vehicle) => vehicle.brand))]
+  const { data, error } = await supabase
+    .from('vehicles')
+    .select('brand')
+    .neq('status', 'sold')
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  const uniqueBrands = [
+    ...new Set((data ?? []).map((row) => String(row.brand))),
+  ]
+
+  return ['Alle', ...uniqueBrands]
 }
 
 export async function listVehiclesByIds(vehicleIds: string[]): Promise<Vehicle[]> {

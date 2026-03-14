@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { SiteLayout } from '../components/SiteLayout'
 import { VehicleCard } from '../components/VehicleCard'
 import { useAuth } from '../context/AuthContext'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 import {
   listVehiclesByIds,
   listWishlistVehicleIds,
@@ -11,6 +12,7 @@ import {
 import type { Vehicle } from '../types/vehicle'
 
 export function WishlistPage() {
+  useDocumentTitle('Wunschliste')
   const { user, loading } = useAuth()
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [wishlistIds, setWishlistIds] = useState<string[]>([])
@@ -39,7 +41,7 @@ export function WishlistPage() {
       })
   }, [user])
 
-  const hasVehicles = useMemo(() => vehicles.length > 0, [vehicles])
+  const hasVehicles = vehicles.length > 0
 
   if (!loading && !user) {
     return <Navigate to="/konto/login" replace />
@@ -74,15 +76,17 @@ export function WishlistPage() {
         ) : hasVehicles ? (
           <div className="inventory-grid">
             {vehicles.map((vehicle) => (
-              <div key={vehicle.id}>
+              <div key={vehicle.id} className="wishlist-card-wrap">
                 <VehicleCard vehicle={vehicle} />
-                <button
-                  type="button"
-                  className="dark-button"
-                  onClick={() => void handleRemove(vehicle.id)}
-                >
-                  Entfernen
-                </button>
+                <div className="wishlist-card-actions">
+                  <button
+                    type="button"
+                    className="chip-button danger"
+                    onClick={() => void handleRemove(vehicle.id)}
+                  >
+                    Entfernen
+                  </button>
+                </div>
               </div>
             ))}
           </div>
